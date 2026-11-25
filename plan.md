@@ -1,4 +1,4 @@
-# StudySync repair and whimsical polish plan
+# StarJar repair and whimsical polish plan
 
 ## Goal and scope
 Preserve the existing vanilla HTML/CSS/JavaScript frontend and Express API. Repair concrete product and trust issues found in the current implementation, then make the app feel like a playful, welcoming study adventure for a broad range of learners. The repository already contains a Storybook Journal theme and five other theme options; keep and refine the existing design rather than rebuilding it. Prioritize a dependable first-use experience, accurate progress, safe gamification, and friendly polish. Do not attempt an infrastructure migration without the owner's database provider/credentials; the current JSON file store is not a durable multi-instance production database.
@@ -18,10 +18,10 @@ Preserve the existing vanilla HTML/CSS/JavaScript frontend and Express API. Repa
 - **Signature Elements:** existing paper-like cards and star/sparkle accents; the study-quest vocabulary; XP and streak rings as collectible progress marks.
 - **Interaction Philosophy:** every action gets an understandable response, small celebrations remain low-pressure, and the app remains useful without completing optional wellness actions.
 - **Animation:** brief springy task/achievement feedback and slow ambient drift only where it does not impair focus; honor `prefers-reduced-motion`.
-- **Typography System:** retain the existing Nunito Sans body, DM Serif Display chapter headings, and JetBrains Mono for numbers/timers.
+- **Typography System:** use Fraunces for storybook display headings, DM Sans for readable body copy, and DM Mono for numeric details and timers. Keep the pairing consistent across palettes, with the Cyberpunk theme's intentional monospace display exception.
 - **Brand Essence:** a kind little study questbook that turns showing up into visible progress; **warm, curious, encouraging**.
 - **Brand Voice:** specific, lightly whimsical, never shaming. Example lines: “Your next tiny quest is waiting.” “A page, a problem, a pause — it all counts as showing up.”
-- **Wordmark & Logo:** preserve the supplied StudySync mark; use existing star/book motifs in UI details instead of replacing the brand asset.
+- **Wordmark & Logo:** use a text-only StarJar wordmark in the app chrome and remove the visible image logo from landing, login/signup, and dashboard screens; keep small decorative stars/rings as interface details, not a replacement logo.
 - **Signature Brand Color:** warm storybook rose, supported by marigold and sage.
 
 ## Project structure

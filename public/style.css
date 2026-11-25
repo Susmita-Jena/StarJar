@@ -1,5 +1,5 @@
 /* ============================================
-   STUDYSYNC — design tokens v3
+   STARJAR — design tokens v3
    Five selectable themes, each a complete look:
    classic-light, classic-dark, cyberpunk, dark-academia, softcore.
    Colors are named by ROLE (primary / accent-info / accent-ok / accent-warn)
@@ -8,8 +8,9 @@
    ============================================ */
 
 :root {
-  --font-body: 'Inter', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-body: 'DM Sans', sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-mono: 'DM Mono', 'SFMono-Regular', Consolas, monospace;
 
   --r-sm: 9px;
   --r-md: 16px;
@@ -21,7 +22,7 @@
 
 /* ---------- CLASSIC LIGHT — emerald teal, terracotta, seafoam ---------- */
 [data-theme="classic-light"] {
-  --font-display: 'Inter', sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
   --bg: #F8F5EE;
   --surface: #FFFFFF;
   --surface-hover: #FBF7EE;
@@ -44,7 +45,7 @@
 
 /* ---------- CLASSIC DARK — amethyst, sapphire, emerald jewel tones ---------- */
 [data-theme="classic-dark"] {
-  --font-display: 'Inter', sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
   --bg: #14101F;
   --surface: #1F1A33;
   --surface-hover: #282141;
@@ -90,7 +91,7 @@
 
 /* ---------- DARK ACADEMIA — antique gold, burgundy wine, sage, rust ---------- */
 [data-theme="dark-academia"] {
-  --font-display: Georgia, 'Times New Roman', serif;
+  --font-display: 'Fraunces', Georgia, serif;
   --bg: #17110D;
   --surface: #251B15;
   --surface-hover: #30241C;
@@ -113,7 +114,7 @@
 
 /* ---------- SOFTCORE — dusty rose blush, cream, soft amber ---------- */
 [data-theme="softcore"] {
-  --font-display: 'JetBrains Mono', monospace;
+  --font-display: 'Fraunces', Georgia, serif;
   --bg: #201519;
   --surface: #2C1E22;
   --surface-hover: #38272C;
@@ -384,8 +385,7 @@ img, svg { display: block; max-width: 100%; }
 .canvas { padding: 36px 48px 100px; min-width: 0; }
 
 .brand { display: flex; align-items: center; gap: 9px; padding-left: 4px; }
-.brand__mark { height: 26px; width: auto; }
-.brand__name { font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; letter-spacing: -0.01em; }
+.brand__name { font-family: var(--font-display); font-weight: 700; font-size: 1.16rem; letter-spacing: -0.035em; }
 
 .streak-summary {
   background: color-mix(in srgb, var(--surface) 55%, transparent);
@@ -759,9 +759,9 @@ img, svg { display: block; max-width: 100%; }
 
 .auth-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; position: relative; z-index: 1; }
 .auth-card { width: 100%; max-width: 400px; }
-.auth-card__brand { display: flex; align-items: center; justify-content: center; gap: 9px; margin-bottom: 30px; }
+.auth-card__brand { display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
 .auth-card__brand svg { width: 26px; height: 26px; }
-.auth-card__brand span { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; }
+.auth-card__brand span { font-family: var(--font-display); font-weight: 700; font-size: 1.55rem; letter-spacing: -0.04em; }
 
 .auth-panel { background: color-mix(in srgb, var(--surface) 60%, transparent); border: 1px solid color-mix(in srgb, var(--text-primary) 10%, transparent); border-radius: var(--r-xl); padding: 34px 30px; box-shadow: var(--shadow-card); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
 .auth-tabs { display: flex; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-md); padding: 4px; margin-bottom: 26px; }
@@ -783,9 +783,14 @@ img, svg { display: block; max-width: 100%; }
 .auth-switch button { color: var(--primary); font-weight: 600; background: none; border: none; }
 .auth-switch button:hover { text-decoration: underline; }
 
-.auth-back { display: inline-flex; align-items: center; gap: 6px; font-size: 0.84rem; color: var(--text-tertiary); margin-bottom: 22px; transition: color 0.15s; }
-.auth-back:hover { color: var(--text-primary); }
-.auth-back svg { width: 14px; height: 14px; }
+.auth-back {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 8px 13px;
+  border: 1px solid var(--border); border-radius: 999px; background: color-mix(in srgb, var(--surface) 58%, transparent);
+  font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 22px;
+  transition: color 0.18s var(--ease), border-color 0.18s var(--ease), background 0.18s var(--ease), transform 0.18s var(--ease);
+}
+.auth-back:hover { color: var(--text-primary); border-color: var(--primary); background: var(--surface); transform: translateX(-2px); }
+.auth-back svg { width: 15px; height: 15px; flex-shrink: 0; }
 
 /* ============================================
    RESPONSIVE

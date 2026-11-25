@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StudySync — dashboard</title>
+<title>StarJar — your study questbook</title>
 
 <link rel="icon" href="/favicon-32.png" type="image/png">
 <link rel="alternate icon" href="/favicon.ico">
@@ -13,7 +13,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Nunito+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body data-theme="storybook">
@@ -23,8 +23,7 @@
   <!-- ===== LEFT RAIL ===== -->
   <aside class="rail rail--left">
     <div class="brand">
-      <img class="brand__mark" src="images/logo-small.png" alt="StudySync logo">
-      <span class="brand__name">StudySync</span>
+      <span class="brand__name">StarJar</span>
     </div>
 
     <div class="streak-summary">
@@ -74,7 +73,7 @@
 
     <div class="status-banner" id="statusBanner">
       <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 6V10.5M10 13.5H10.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      <span id="statusBannerText">Working offline — changes won't save until the connection to StudySync comes back.</span>
+      <span id="statusBannerText">Working offline — changes won't save until the connection to StarJar comes back.</span>
     </div>
 
     <!-- ---------- TASKS VIEW ---------- -->
@@ -377,13 +376,13 @@
 <!-- Full-page states -->
 <div class="full-page-state" id="loadingState">
   <svg viewBox="0 0 20 20" fill="none" style="animation:spin 1s linear infinite;"><circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="2" stroke-dasharray="30" stroke-dashoffset="10"/></svg>
-  <p>Loading StudySync…</p>
+  <p>Loading StarJar…</p>
 </div>
 <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
 
 <div class="full-page-state" id="offlineState" style="display:none;">
   <svg viewBox="0 0 24 24" fill="none"><path d="M3 3L21 21M8.5 8.5C6.5 9.3 5 11 5 13M12 5C14.5 5 16.8 6 18.5 7.7M15.5 11.5C16.5 12.3 17 13.4 17 14.6M12 17.5H12.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-  <h1>Can't reach the StudySync server</h1>
+  <h1>Can't reach the StarJar server</h1>
   <p>The app needs the backend running to load your tasks and streak. In the project folder, run <code>npm start</code>, then reload this page.</p>
   <button class="btn btn--primary" onclick="window.location.reload()">Try again</button>
 </div>

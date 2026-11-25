@@ -1,7 +1,7 @@
 {
-  "name": "studysync-server",
+  "name": "starjar-server",
   "version": "1.0.0",
-  "description": "StudySync productivity app",
+  "description": "StarJar study questbook and productivity app",
   "type": "module",
   "scripts": {
     "start": "node dev-server.js",

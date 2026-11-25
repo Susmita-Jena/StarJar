@@ -26,6 +26,7 @@
   /* tab switching */
   function showTab(tab) {
     const isLogin = tab === "login";
+    document.title = `${isLogin ? "Log in" : "Sign up"} — StarJar`;
     el.tabLogin.classList.toggle("is-active", isLogin);
     el.tabSignup.classList.toggle("is-active", !isLogin);
     el.loginForm.style.display = isLogin ? "block" : "none";
@@ -62,7 +63,7 @@
       await window.studySyncApi.login($("#loginEmail").value.trim(), $("#loginPassword").value);
       window.location.href = "/app.html";
     } catch (err) {
-      showError(err.isNetworkError ? "Can't reach the StudySync server — is it running?" : err.message);
+      showError(err.isNetworkError ? "Can't reach the StarJar server — is it running?" : err.message);
       setLoading(el.loginSubmit, false, "Log in");
     }
   });
@@ -79,7 +80,7 @@
       );
       window.location.href = "/app.html";
     } catch (err) {
-      showError(err.isNetworkError ? "Can't reach the StudySync server — is it running?" : err.message);
+      showError(err.isNetworkError ? "Can't reach the StarJar server — is it running?" : err.message);
       setLoading(el.signupSubmit, false, "Create account");
     }
   });

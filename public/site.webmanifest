@@ -1,7 +1,7 @@
 {
-  "name": "StudySync",
-  "short_name": "StudySync",
-  "description": "Tasks, a focus timer, mood log, and a streak system that only grows when you actually show up.",
+  "name": "StarJar",
+  "short_name": "StarJar",
+  "description": "A cozy questbook for study tasks, focus sessions, and gentle progress.",
   "start_url": "/app.html",
   "display": "standalone",
   "background_color": "#10132A",

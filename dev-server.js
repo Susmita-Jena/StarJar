@@ -13,5 +13,5 @@ app.get(/^(?!\/api).*/, (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`StudySync running at http://localhost:${PORT}`);
+  console.log(`StarJar running at http://localhost:${PORT}`);
 });

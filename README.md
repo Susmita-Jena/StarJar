@@ -1,4 +1,4 @@
-# StudySync
+# StarJar
 
 A cozy, gamified study app: tasks with XP, a Pomodoro focus timer, a Recharge
 corner (mood, water, stretch, breathing exercise, memory-match game), and a
@@ -47,12 +47,12 @@ Switchable anytime from the **Themes** tab inside the app (picked stays in
 
 | Theme | Vibe | Display font |
 |---|---|---|
-| Storybook Journal | Warm paper, rose, marigold, sage — the default study questbook | DM Serif Display + Nunito Sans |
-| Classic Light | Dusty teal, mint, peach, sage — daylight-calm | Inter (sans-serif) |
-| Classic Dark | Navy, mauve, dusty blue — the original after hours | Inter (sans-serif) |
-| Cyberpunk | Neon violet/cyan on near-black — late-night deep focus | Courier New (monospace) |
-| Dark Academia | Aged gold, burgundy, mahogany — library-coded | Snell Roundhand — a Mac/iOS system font; falls back to Mrs Saint Delafield (Google Fonts) on Windows/Linux/Android, so it still looks like an elegant script everywhere, just not the identical face |
-| Softcore | Sunset amber, warm candlelight — cozy and unhurried | JetBrains Mono (monospace) |
+| Storybook Journal | Warm paper, rose, marigold, sage — the default study questbook | Fraunces + DM Sans; DM Mono for numeric details |
+| Classic Light | Dusty teal, mint, peach, sage — daylight-calm | Fraunces + DM Sans |
+| Classic Dark | Navy, mauve, dusty blue — after hours | Fraunces + DM Sans |
+| Cyberpunk | Neon violet/cyan on near-black — late-night deep focus | Courier New display + DM Sans |
+| Dark Academia | Aged gold, burgundy, mahogany — library-coded | Fraunces + DM Sans |
+| Softcore | Sunset amber, warm candlelight — cozy and unhurried | Fraunces + DM Sans |
 
 The five original theme cards use their matching reference photos; Storybook
 Journal uses a custom paper-and-sparkle treatment. Theme names, descriptions,
@@ -90,7 +90,7 @@ studysync/
     ├── app.js, auth.js            dashboard and account behavior (including Recharge games)
     ├── favicon.ico, favicon-32.png, apple-touch-icon.png, icon-192.png, icon-512.png, site.webmanifest
     └── images/
-        ├── logo.png, logo-small.png       the StudySync mark (used in nav + favicons)
+        ├── logo.png, logo-small.png       legacy image assets; the app chrome now uses a text-only StarJar wordmark
         ├── theme-*.jpg (×5)                reference photos for the five original themes
         └── moods/*.jpg (×6)                 happy / sad / okay / satire / lovely / melancholic
 ```
@@ -166,8 +166,7 @@ GAME`). To add more activities, follow the `.recharge-card` pattern in
 
 ---
 
-Built on top of the earlier Streakr/StudySync prototypes — this version
-adds six selectable themes, including the Storybook Journal default, swaps
+StarJar adds six selectable themes, including the Storybook Journal default, swaps
 Study Room for a Recharge corner with two mini-games, and adds motion
 throughout (task-complete bounce, level-up confetti burst, achievement
 pop-in, breathing game animation).
