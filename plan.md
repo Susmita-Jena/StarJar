@@ -1,14 +1,14 @@
 # StarJar repair and whimsical polish plan
 
 ## Goal and scope
-Preserve the existing vanilla HTML/CSS/JavaScript frontend and Express API. Repair concrete product and trust issues found in the current implementation, then make the app feel like a playful, welcoming study adventure for a broad range of learners. The repository already contains a Storybook Journal theme and five other theme options; keep and refine the existing design rather than rebuilding it. Prioritize a dependable first-use experience, accurate progress, safe gamification, and friendly polish. Do not attempt an infrastructure migration without the owner's database provider/credentials; the current JSON file store is not a durable multi-instance production database.
+Preserve the existing vanilla HTML/CSS/JavaScript frontend, Express API, and Vercel serverless entrypoint. Migrate account and study-progress persistence from the JSON file to hosted PostgreSQL, keeping the JSON adapter only for local development. Preserve existing API paths, payloads, auth behavior, gamification rules, and all six themes. Do not provision external services or write production secrets from this environment; document the exact Vercel setup the owner must complete.
 
 ## Implementation approach
-- Keep existing routes, API payload patterns, and all six themes. Fix the local Express middleware order so the documented startup flow can serve HTML/CSS/JS as well as API responses. Preserve the existing warm Storybook visual language and component structure; correct CSS syntax issues and tune targeted copy/interactions rather than replacing the design system.
-- Tighten server-side auth-secret and Pomodoro validation; avoid rewarding invalid timer requests. Correct discrepancies between actual rewards and landing-page promises; do not pressure users to log mood or water for points.
-- Make the focus timer resilient to page refresh using local session state and an idempotent completion identifier, and show completion counts based on the actual completion date.
-- Improve microcopy and small game-like details with a cozy field-journal/RPG voice, while retaining clear contrast, reduced-motion support, keyboard access, mobile layout, and non-gendered framing.
-- Run the repository's available checks and local HTTP/API smoke checks. Keep secrets and personal data out of the repository; do not alter `.env` or tracked data.
+- Keep the existing routes and frontend behavior. Replace direct route access to synchronous `db.data.*` arrays with an asynchronous repository interface shared by a PostgreSQL adapter and a local JSON adapter.
+- Use a standard PostgreSQL client with `DATABASE_URL`; create normalized tables and constraints for users, tasks, moods, user progress, focus/break sessions, and daily water logs. Use parameterized queries, foreign keys, unique constraints, and database transactions for task rewards and idempotent Pomodoro completion.
+- Select PostgreSQL whenever `DATABASE_URL` is configured. In local development without it, use the JSON adapter and an overridable temporary DB path for tests. In production/Vercel, fail closed with a clear JSON 503 if `DATABASE_URL` is missing; never silently fall back to file storage or `/tmp`.
+- Keep the existing production `JWT_SECRET` guard. Document that the owner must set `JWT_SECRET` and `DATABASE_URL` in Vercel for Production and Preview as applicable, then redeploy. Do not commit secrets or a real database URL.
+- Add repeatable API tests using an isolated temporary JSON DB for account creation/login, per-user data isolation, task XP/streak updates, mood upserts, water state, and idempotent Pomodoro rewards. Run syntax checks and smoke tests; state clearly that a real hosted-Postgres connection test remains pending until the owner connects a provider.
 
 ## Design system
 - **Design Movement:** whimsical storybook field journal meets cozy quest log; playful without leaning on a gendered stereotype or distracting from study.
@@ -28,8 +28,11 @@ Preserve the existing vanilla HTML/CSS/JavaScript frontend and Express API. Repa
 - `public/index.html`, `public/app.html`, `public/auth.html`: landing, authenticated dashboard, and account screens.
 - `public/style.css`: shared design tokens, layout, responsive rules, and motion for all pages/themes.
 - `public/app.js`, `public/auth.js`, `public/api.js`, `public/rings.js`: frontend behavior, API client, and progress rendering.
-- `routes/`, `middleware/`, `lib/`, `db.js`: Express API, auth, gamification rules, and current JSON data adapter.
-- `api/[...path].js`, `dev-server.js`, `vercel.json`: serverless and local runtime entrypoints.
+- `routes/`: Express API endpoints; all persistent reads/writes use the asynchronous repository interface.
+- `db.js`, `lib/db-json.js`, `lib/db-postgres.js`: storage selection, local-only file adapter, and hosted PostgreSQL implementation.
+- `lib/gamify.js`: pure XP, level, streak, and achievement rules shared by both adapters.
+- `middleware/auth.js`, `lib/express-app.js`: JWT verification, API routing, and safe structured error responses.
+- `api/[...path].js`, `dev-server.js`, `vercel.json`: Vercel serverless and local runtime entrypoints.
 
 ## Constraints
-No database service or durable storage credentials are configured in the repository. The JSON-file adapter is appropriate for local/small-scale use only and cannot guarantee durable data for Vercel serverless multi-user production. Surface this clearly rather than fabricating a migration or claiming multi-user production reliability. Never change or publish secrets.
+The owner approved a Postgres refactor but has not yet provisioned or connected a database. No production database URL or Vercel settings are available here. Do not write or expose secrets. Do not claim the production login/signup path is fixed until the owner connects persistent Postgres, configures `JWT_SECRET`, redeploys, and verifies the live API.

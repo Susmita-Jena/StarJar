@@ -1,59 +1,31 @@
-// db.js
-// A deliberately simple JSON-file "database". No ORM, no native bindings —
-// just an array of records read into memory and written back to disk after
-// every change. This is plenty for a single-user or small-group study app,
-// and it means you can literally open data/db.json and read your own data.
-//
-// If you ever outgrow this (many concurrent users, need for real querying),
-// swap this file for a real database client — every route only talks to the
-// `db.data.*` arrays and calls `db.save()`, so the rest of the app doesn't
-// need to change.
+// Select durable storage for hosted deployments and a local-only adapter for development.
+// Importing the local adapter is intentionally avoided on Vercel/production so it never
+// attempts to create or write data/db.json in the read-only function bundle.
+import "dotenv/config";
+import { DatabaseConfigurationError } from "./lib/db-errors.js";
 
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+const databaseUrl = process.env.DATABASE_URL?.trim();
+const isHostedProduction = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.join(__dirname, "data", "db.json");
-
-const DEFAULT_DATA = {
-  users: [],
-  tasks: [],
-  moods: [],
-  pomodoroSessions: [],
-  waterLogs: [],
-  userState: [], // { userId, xp, streak, lastCompletionDate }
-};
-
-function ensureDb() {
-  const dir = path.dirname(DB_PATH);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  if (!fs.existsSync(DB_PATH)) {
-    fs.writeFileSync(DB_PATH, JSON.stringify(DEFAULT_DATA, null, 2));
-  }
+let db;
+if (databaseUrl) {
+  const { createPostgresDb } = await import("./lib/db-postgres.js");
+  db = createPostgresDb(databaseUrl);
+} else if (isHostedProduction) {
+  const fail = async () => {
+    throw new DatabaseConfigurationError(
+      "StarJar storage is not configured. Add DATABASE_URL to this Vercel environment and redeploy."
+    );
+  };
+  db = new Proxy({ health: fail }, {
+    get(target, property) {
+      if (property in target) return target[property];
+      return fail;
+    },
+  });
+} else {
+  const { createJsonDb } = await import("./lib/db-json.js");
+  db = createJsonDb();
 }
 
-ensureDb();
-
-let cache;
-try {
-  cache = JSON.parse(fs.readFileSync(DB_PATH, "utf-8"));
-  // backfill any keys added in later versions of this file
-  for (const key of Object.keys(DEFAULT_DATA)) {
-    if (!(key in cache)) cache[key] = DEFAULT_DATA[key];
-  }
-} catch (e) {
-  console.error("Could not read data/db.json, starting fresh:", e.message);
-  cache = structuredClone(DEFAULT_DATA);
-}
-
-function save() {
-  fs.writeFileSync(DB_PATH, JSON.stringify(cache, null, 2));
-}
-
-export const db = {
-  get data() {
-    return cache;
-  },
-  save,
-};
+export { db };

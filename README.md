@@ -4,8 +4,8 @@ A cozy, gamified study app: tasks with XP, a Pomodoro focus timer, a Recharge
 corner (mood, water, stretch, breathing exercise, memory-match game), and a
 streak system (**Sync Rings**) — all skinnable across **6 complete themes**.
 
-Landing page → sign up / log in → dashboard, all backed by a real Node.js
-API with per-user accounts.
+Landing page → sign up / log in → dashboard, all backed by a Node.js API with
+per-user accounts and a storage adapter for local JSON or hosted PostgreSQL.
 
 ---
 
@@ -14,31 +14,47 @@ API with per-user accounts.
 ```bash
 npm install
 cp .env.example .env
+```
+
+Set a unique local `JWT_SECRET` in `.env`, then run:
+
+```bash
 npm start
 ```
 
-Then open **http://localhost:3000** in your browser. That's it — one
-process serves both the frontend and the API, so there's no separate
-frontend server to run and no CORS setup needed.
+Open **http://localhost:3000**. One process serves both the frontend and API,
+so there is no separate frontend server or CORS setup to manage.
 
-> Open it via `http://localhost:3000`, not by double-clicking `app.html`.
-> The app needs the server running to save anything — opening the HTML
-> file directly (`file://...`) has nowhere to send your data.
+> Open the app via `http://localhost:3000`, not by double-clicking `app.html`.
+> The app needs the server running to save anything; opening the HTML file
+> directly (`file://...`) has nowhere to send its data.
 
-### Before you deploy or share this anywhere
+### Vercel production setup
 
-Open `.env` and change `JWT_SECRET` to a long random string — that's what
-signs everyone's login tokens. The placeholder value is fine for playing
-around locally, but not for anything real.
+The Express API is already served by the Vercel Function in `api/[...path].js`;
+you do not need to deploy a second API host. Vercel Functions cannot use the
+project filesystem as a durable database, so production must use hosted
+PostgreSQL. The app selects PostgreSQL when `DATABASE_URL` is configured. It
+creates its tables and indexes automatically on the first database request.
 
-The JSON-file database in this repository is for local or small-group use
-only. It is not durable shared storage on Vercel/serverless hosting: function
-instances can be read-only, restart independently, or lose local writes.
-Before using this deployment for real multi-user accounts, connect a persistent
-shared database and adapt `db.js`; a `JWT_SECRET` alone does not make serverless
-data durable.
+1. In the Vercel project, connect a hosted PostgreSQL provider from the
+   Marketplace (for example Neon) and use its pooled PostgreSQL connection URL.
+   Do not commit the URL or paste it into source files.
+2. In **Project Settings → Environment Variables**, make sure `DATABASE_URL`
+   and a unique, random `JWT_SECRET` are set for **Production**. Add them for
+   **Preview** too if you test preview deployments. `JWT_SECRET` must not be
+   `dev-secret-change-me` or the placeholder from `.env.example`.
+3. Redeploy after adding or changing either variable. Vercel applies environment
+   variable changes only to new deployments.
+4. Check `/api/health` on the new deployment. It should return `{"ok":true}`.
+   Then test signup and login with a disposable account before sharing the site.
 
----
+If either required setting is missing, production API requests fail with a clear
+503 setup response; the app never falls back to a function-local file or `/tmp`
+for user accounts. The local JSON file is ignored by Git and is only for local
+development. It is not automatically copied into the hosted database; any local
+accounts/data you need to preserve must be migrated separately before relying on
+the new database.
 
 ## The 6 themes
 
@@ -71,51 +87,38 @@ studysync/
 ├── dev-server.js          Local entry point — serves public/ and starts Express
 ├── server.js              Legacy placeholder; the app lives in lib/express-app.js
 ├── lib/express-app.js     Express app — mounts API routes and static/API middleware
-├── db.js                  Tiny JSON-file "database" (see note below)
-├── lib/gamify.js           XP, level, streak, and achievement math — all in one place
-├── middleware/auth.js      JWT verification
+├── db.js                  Chooses PostgreSQL for configured deployments or local JSON
+├── lib/db-postgres.js     Hosted Postgres repository, schema and transactions
+├── lib/db-json.js         Local-only JSON repository; ignored data is not deployed
+├── lib/gamify.js          XP, level, streak, and achievement math
+├── middleware/auth.js     JWT verification and existing-user check
 ├── routes/
 │   ├── auth.js             register / login
-│   ├── tasks.js             task CRUD (awards XP + streak on completion)
-│   ├── mood.js               mood log (one entry per day, upserted)
-│   └── state.js               /me, /state, pomodoro completion, water, achievements
-├── data/db.json            Created automatically on first run — local app data
-└── public/                  Everything the browser loads
-    ├── index.html            landing page served at /, includes theme showcase
-    ├── auth.html              login / signup (fixed Classic Dark)
-    ├── app.html                dashboard: Tasks / Timer / Recharge / Progress / Themes
-    ├── style.css               one shared stylesheet — all 6 themes + all pages
-    ├── rings.js                 renders the Sync Rings streak visual, theme-aware
-    ├── api.js                    fetch wrapper for every backend call
-    ├── app.js, auth.js            dashboard and account behavior (including Recharge games)
-    ├── favicon.ico, favicon-32.png, apple-touch-icon.png, icon-192.png, icon-512.png, site.webmanifest
-    └── images/
-        ├── logo.png, logo-small.png       legacy image assets; the app chrome now uses a text-only StarJar wordmark
-        ├── theme-*.jpg (×5)                reference photos for the five original themes
-        └── moods/*.jpg (×6)                 happy / sad / okay / satire / lovely / melancholic
+│   ├── tasks.js            task CRUD (awards XP + streak on completion)
+│   ├── mood.js             mood log (one entry per user/day)
+│   └── state.js            /me, /state, Pomodoro completion, water, achievements
+├── api/[...path].js       Vercel serverless API entrypoint
+├── test/api.test.js       Isolated API regression tests (temporary JSON DB)
+└── public/                Everything the browser loads
 ```
 
-## Why a JSON file instead of a real database?
+## Storage behavior
 
-`db.js` reads `data/db.json` into memory on startup and writes it back to
-disk after every change — no ORM, no native dependencies to compile.
-That last part matters more than it sounds: packages like `better-sqlite3`
-need native build tools, which is exactly the kind of thing that turns into
-an afternoon of PowerShell/PATH pain on Windows. `express`, `cors`,
-`bcryptjs`, and `jsonwebtoken` are all pure JavaScript, so `npm install`
-just works.
-
-The tradeoff is real — this won't hold up under many concurrent users. If
-you ever want to scale this past personal/small-group use, every route
-only touches `db.data.*` arrays and calls `db.save()`, so swapping in a
-real database means rewriting `db.js`, not the rest of the app.
+Without `DATABASE_URL`, non-production development uses `data/db.json`, which is
+git-ignored. On Vercel or any production runtime, StarJar requires
+`DATABASE_URL` and uses PostgreSQL instead; it never silently uses the JSON file.
+All SQL calls are parameterized. User-owned records have foreign keys, moods and
+water logs are unique per user/day, and task rewards and Pomodoro idempotency use
+database transactions/constraints to protect updates from duplicate requests.
 
 ## API reference
 
-All API routes except `/api/auth/*` require `Authorization: Bearer <token>`.
+All API routes except `/api/auth/*` and `/api/health` require
+`Authorization: Bearer <token>`.
 
 | Method | Path | Does |
 |---|---|---|
+| GET | `/api/health` | database and auth configuration readiness |
 | POST | `/api/auth/register` | `{name, email, password}` → `{token, user}` |
 | POST | `/api/auth/login` | `{email, password}` → `{token, user}` |
 | GET | `/api/me` | current user |
@@ -157,12 +160,11 @@ GAME`). To add more activities, follow the `.recharge-card` pattern in
 
 ## Notes on what's real vs. simplified
 
-- **Achievement unlocks** are computed on request, not cached — fine at
-  this scale, would want indexing at real scale.
-- Passwords are hashed with bcrypt, never stored in plain text. Tokens
-  expire after 30 days.
-- Theme choice is stored in `localStorage`, not the backend — it's a
-  per-device preference, not account data, by design.
+- Achievement unlocks are computed on request, not cached.
+- Passwords are hashed with bcrypt, never stored in plain text. Tokens expire
+  after 30 days.
+- Theme choice is stored in `localStorage`, not the backend — it's a per-device
+  preference, not account data, by design.
 
 ---
 
