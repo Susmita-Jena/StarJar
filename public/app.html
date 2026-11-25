@@ -28,7 +28,7 @@
     </div>
 
     <div class="streak-summary">
-      <span class="streak-summary__label">Streak</span>
+      <span class="streak-summary__label">Quest streak</span>
       <div class="sync-rings-wrap" id="railRingsWrap" style="width:64px;height:64px;">
         <svg id="railRings" viewBox="0 0 128 128" width="64" height="64"></svg>
         <div class="rings__center">
@@ -40,7 +40,7 @@
     <nav class="nav" aria-label="Main">
       <button class="nav__item is-active" data-view="tasks">
         <svg viewBox="0 0 20 20" fill="none"><path d="M4 10L8 14L16 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span>Tasks</span>
+        <span>Quests</span>
         <span class="nav__count" id="taskNavCount">0</span>
       </button>
       <button class="nav__item" data-view="pomodoro">
@@ -82,7 +82,7 @@
       <header class="view-head">
         <div>
           <p class="view-head__eyebrow" id="dateToday">Loading date…</p>
-          <h1 class="view-head__title" id="greeting">Let's get something done</h1>
+          <h1 class="view-head__title" id="greeting">Your next tiny quest is waiting</h1>
         </div>
         <div class="xp-chip">
           <svg viewBox="0 0 16 16" fill="none"><path d="M8 1L9.8 5.6L14.7 6L11 9.2L12.1 14L8 11.4L3.9 14L5 9.2L1.3 6L6.2 5.6L8 1Z" fill="currentColor"/></svg>
@@ -91,11 +91,11 @@
       </header>
 
       <form class="task-add" id="taskForm">
-        <input type="text" id="taskInput" class="task-add__input" placeholder="Add a task — e.g. Finish DSA assignment" autocomplete="off">
+        <input type="text" id="taskInput" class="task-add__input" placeholder="Add a tiny quest — e.g. read 3 pages" autocomplete="off" maxlength="180">
         <select id="taskPriority" class="task-add__priority">
-          <option value="low">Low</option>
-          <option value="mid" selected>Mid</option>
-          <option value="high">High</option>
+          <option value="low">Tiny</option>
+          <option value="mid" selected>Steady</option>
+          <option value="high">Mighty</option>
         </select>
         <button type="submit" class="task-add__btn" aria-label="Add task">
           <svg viewBox="0 0 20 20" fill="none"><path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -106,8 +106,8 @@
 
       <div class="empty-state" id="emptyState">
         <svg viewBox="0 0 64 64" fill="none"><rect x="14" y="10" width="36" height="46" rx="4" stroke="currentColor" stroke-width="2"/><path d="M22 22H42M22 30H42M22 38H34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        <p>Nothing on the list yet.</p>
-        <span>Add the smallest possible task — momentum starts stupid small.</span>
+        <p>Your questbook is a fresh page.</p>
+        <span>Begin with one tiny quest. Little steps count as real progress.</span>
       </div>
     </section>
 
@@ -116,7 +116,7 @@
       <header class="view-head">
         <div>
           <p class="view-head__eyebrow">Focus timer</p>
-          <h1 class="view-head__title">One block. Full attention.</h1>
+          <h1 class="view-head__title">A little focus spell</h1>
         </div>
       </header>
 
@@ -154,7 +154,7 @@
         <div style="position:relative;">
           <svg class="sparkle" viewBox="0 0 20 20" fill="currentColor" width="16" height="16" style="left:-22px; top:-6px;"><path d="M10 0L11.8 8.2L20 10L11.8 11.8L10 20L8.2 11.8L0 10L8.2 8.2L10 0Z"/></svg>
           <p class="view-head__eyebrow">Recharge</p>
-          <h1 class="view-head__title">Take an actual break</h1>
+          <h1 class="view-head__title">Visit the break garden</h1>
         </div>
       </header>
 
@@ -254,7 +254,7 @@
       <header class="view-head">
         <div>
           <p class="view-head__eyebrow">Progress</p>
-          <h1 class="view-head__title">Everything you've built so far</h1>
+          <h1 class="view-head__title">Look how far you've wandered</h1>
         </div>
       </header>
 
@@ -267,7 +267,7 @@
               <span class="rings__center-label" style="font-size:0.68rem;">day streak</span>
             </div>
           </div>
-          <p style="font-size:0.8rem; color:var(--text-tertiary); text-align:center;">Each ring is a 7-day tier. Miss a day and it resets to one.</p>
+          <p style="font-size:0.8rem; color:var(--text-tertiary); text-align:center;">Each ring marks a week of showing up. Your next chapter is always ready when you are.</p>
         </div>
 
         <div class="progress-card">
@@ -354,7 +354,7 @@
 <nav class="bottom-nav" id="bottomNav" aria-label="Main">
   <button class="bottom-nav__item is-active" data-view="tasks">
     <svg viewBox="0 0 20 20" fill="none"><path d="M4 10L8 14L16 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <span>Tasks</span>
+    <span>Quests</span>
   </button>
   <button class="bottom-nav__item" data-view="pomodoro">
     <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.2" stroke="currentColor" stroke-width="1.8"/><path d="M10 6V10L12.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>

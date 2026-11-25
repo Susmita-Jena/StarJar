@@ -1,9 +1,8 @@
 # StudySync
 
-A gamified productivity app for actual studying: tasks with XP, a Pomodoro
-focus timer, a Recharge corner (mood, water, stretch, breathing exercise,
-bubble-pop game), and a streak system (**Sync Rings**) that only grows when
-you actually show up — all skinnable across **5 complete themes**.
+A cozy, gamified study app: tasks with XP, a Pomodoro focus timer, a Recharge
+corner (mood, water, stretch, breathing exercise, memory-match game), and a
+streak system (**Sync Rings**) — all skinnable across **6 complete themes**.
 
 Landing page → sign up / log in → dashboard, all backed by a real Node.js
 API with per-user accounts.
@@ -32,36 +31,46 @@ Open `.env` and change `JWT_SECRET` to a long random string — that's what
 signs everyone's login tokens. The placeholder value is fine for playing
 around locally, but not for anything real.
 
+The JSON-file database in this repository is for local or small-group use
+only. It is not durable shared storage on Vercel/serverless hosting: function
+instances can be read-only, restart independently, or lose local writes.
+Before using this deployment for real multi-user accounts, connect a persistent
+shared database and adapt `db.js`; a `JWT_SECRET` alone does not make serverless
+data durable.
+
 ---
 
-## The 5 themes
+## The 6 themes
 
 Switchable anytime from the **Themes** tab inside the app (picked stays in
 `localStorage`, so it's per-device, not per-account):
 
 | Theme | Vibe | Display font |
 |---|---|---|
+| Storybook Journal | Warm paper, rose, marigold, sage — the default study questbook | DM Serif Display + Nunito Sans |
 | Classic Light | Dusty teal, mint, peach, sage — daylight-calm | Inter (sans-serif) |
 | Classic Dark | Navy, mauve, dusty blue — the original after hours | Inter (sans-serif) |
 | Cyberpunk | Neon violet/cyan on near-black — late-night deep focus | Courier New (monospace) |
 | Dark Academia | Aged gold, burgundy, mahogany — library-coded | Snell Roundhand — a Mac/iOS system font; falls back to Mrs Saint Delafield (Google Fonts) on Windows/Linux/Android, so it still looks like an elegant script everywhere, just not the identical face |
 | Softcore | Sunset amber, warm candlelight — cozy and unhurried | JetBrains Mono (monospace) |
 
-Each theme's Themes-gallery card also shows its own reference photo as
-the card background (see `images/theme-*.jpg` and the `THEMES` array in
-`app.js` — that's where the image path, name, and description live).
+The five original theme cards use their matching reference photos; Storybook
+Journal uses a custom paper-and-sparkle treatment. Theme names, descriptions,
+and optional image paths live in `public/app.js`.
 
 Colors are CSS custom properties keyed off `data-theme` on `<body>` — see
-the top of `public/style.css`. Adding a 6th theme means adding one more
+the top of `public/style.css`. Adding a 7th theme means adding one more
 `[data-theme="..."]` block with the same ~15 variables (`--bg`, `--surface`,
 `--primary`, `--accent-info`, `--accent-ok`, `--accent-warn`, `--on-accent`,
-etc.) and one entry in the `THEMES` array in `app.js`.
+etc.) and one entry in the `THEMES` array in `public/app.js`.
 
 ## Project structure
 
 ```
 studysync/
-├── server.js              Express app — mounts API routes + serves public/
+├── dev-server.js          Local entry point — serves public/ and starts Express
+├── server.js              Legacy placeholder; the app lives in lib/express-app.js
+├── lib/express-app.js     Express app — mounts API routes and static/API middleware
 ├── db.js                  Tiny JSON-file "database" (see note below)
 ├── lib/gamify.js           XP, level, streak, and achievement math — all in one place
 ├── middleware/auth.js      JWT verification
@@ -70,20 +79,19 @@ studysync/
 │   ├── tasks.js             task CRUD (awards XP + streak on completion)
 │   ├── mood.js               mood log (one entry per day, upserted)
 │   └── state.js               /me, /state, pomodoro completion, water, achievements
-├── data/db.json            Created automatically on first run — your actual data
+├── data/db.json            Created automatically on first run — local app data
 └── public/                  Everything the browser loads
-    ├── landing.html          marketing page (served at /), includes theme showcase
+    ├── index.html            landing page served at /, includes theme showcase
     ├── auth.html              login / signup (fixed Classic Dark)
     ├── app.html                dashboard: Tasks / Timer / Recharge / Progress / Themes
-    ├── style.css               one shared stylesheet — all 5 themes + all pages
+    ├── style.css               one shared stylesheet — all 6 themes + all pages
     ├── rings.js                 renders the Sync Rings streak visual, theme-aware
     ├── api.js                    fetch wrapper for every backend call
-    ├── app.js, auth.js            page logic (breathing game + bubble pop live in app.js)
+    ├── app.js, auth.js            dashboard and account behavior (including Recharge games)
     ├── favicon.ico, favicon-32.png, apple-touch-icon.png, icon-192.png, icon-512.png, site.webmanifest
     └── images/
         ├── logo.png, logo-small.png       the StudySync mark (used in nav + favicons)
-        ├── theme-*.jpg (×5)                one reference photo per theme, shown as
-        │                                     the background on its Themes gallery card
+        ├── theme-*.jpg (×5)                reference photos for the five original themes
         └── moods/*.jpg (×6)                 happy / sad / okay / satire / lovely / melancholic
 ```
 
@@ -104,7 +112,7 @@ real database means rewriting `db.js`, not the rest of the app.
 
 ## API reference
 
-All routes except `/auth/*` require `Authorization: Bearer <token>`.
+All API routes except `/api/auth/*` require `Authorization: Bearer <token>`.
 
 | Method | Path | Does |
 |---|---|---|
@@ -119,7 +127,7 @@ All routes except `/auth/*` require `Authorization: Bearer <token>`.
 | POST | `/api/mood` | `{mood, color, note}` → upserts today's entry |
 | GET | `/api/state` | xp, level, streak, water, sessions today |
 | GET | `/api/achievements` | all 6 badges + unlocked status |
-| POST | `/api/pomodoro/complete` | `{minutes, type}` → xp/level/streak |
+| POST | `/api/pomodoro/complete` | `{minutes, type, sessionId}` → xp/level/streak; focus requires a unique ID and supports 25/50 minutes, breaks support 5/15 |
 | POST | `/api/water` | `{count}` → today's water count |
 
 ## Gamification rules (in `lib/gamify.js`)
@@ -134,18 +142,18 @@ All routes except `/auth/*` require `Authorization: Bearer <token>`.
 - **Achievements**: six badges, unlock conditions live in the
   `ACHIEVEMENTS` array in `lib/gamify.js` if you want to add more.
 
-## The two Recharge games
+## Recharge activities
 
 - **Breathing exercise** — box breathing, 4 seconds per phase (inhale →
   hold → exhale → hold), pure CSS transform/animation driven by a small
   JS phase timer. No backend involvement, no XP — it's meant to be a
   genuine break, not another thing to optimize.
-- **Bubble pop** — 24-bubble grid, click to pop, refill button. Also
+- **Memory match** — 6 pairs of mood icons, reshuffle button. Also
   stakes-free by design.
 
-Both live entirely in `app.js` (search for `BREATHING GAME` / `BUBBLE POP
-GAME`) if you want to add more games alongside them — a memory-match card
-game would slot into the same `.recharge-card` pattern.
+Both live in `public/app.js` (search for `BREATHING EXERCISE` / `MEMORY MATCH
+GAME`). To add more activities, follow the `.recharge-card` pattern in
+`public/app.html` and add matching render/interaction logic in `public/app.js`.
 
 ## Notes on what's real vs. simplified
 
@@ -159,8 +167,7 @@ game would slot into the same `.recharge-card` pattern.
 ---
 
 Built on top of the earlier Streakr/StudySync prototypes — this version
-replaces the single cool-toned palette with 5 selectable themes, swaps
+adds six selectable themes, including the Storybook Journal default, swaps
 Study Room for a Recharge corner with two mini-games, and adds motion
 throughout (task-complete bounce, level-up confetti burst, achievement
 pop-in, breathing game animation).
-

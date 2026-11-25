@@ -48,23 +48,45 @@ router.get("/achievements", (req, res) => {
 });
 
 router.post("/pomodoro/complete", (req, res) => {
-  const { minutes, type } = req.body || {};
+  const { minutes, type, sessionId } = req.body || {};
   const mins = Number(minutes);
-  if (!mins || mins <= 0) {
-    return res.status(400).json({ error: "Missing session length." });
+  if (!Number.isInteger(mins) || !["focus", "break"].includes(type)) {
+    return res.status(400).json({ error: "Choose a valid focus or break session." });
   }
-  const sessionType = type === "break" ? "break" : "focus";
+  const sessionType = type;
+  const allowedMinutes = sessionType === "focus" ? [25, 50] : [5, 15];
+  if (!allowedMinutes.includes(mins)) {
+    return res.status(400).json({ error: "Use one of the available timer lengths." });
+  }
+  if (sessionType === "focus" && (typeof sessionId !== "string" || !/^[a-z0-9-]{8,80}$/i.test(sessionId))) {
+    return res.status(400).json({ error: "A valid focus session ID is required." });
+  }
+
+  const state = getOrCreateUserState(db, req.userId);
+  const existing = sessionType === "focus" && db.data.pomodoroSessions.find(
+    (s) => s.userId === req.userId && s.clientSessionId === sessionId
+  );
+  if (existing) {
+    if (existing.minutes !== mins || existing.type !== sessionType) {
+      return res.status(409).json({ error: "This session ID was already used for a different timer." });
+    }
+    const today = todayKey();
+    const sessionsToday = db.data.pomodoroSessions.filter(
+      (s) => s.userId === req.userId && s.type === "focus" && s.completedAt.startsWith(today)
+    ).length;
+    return res.json({ session: existing, xp: state.xp, level: levelForXp(state.xp), leveledUp: false, streak: state.streak, sessionsToday, duplicate: true });
+  }
 
   const session = {
     id: "p_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
     userId: req.userId,
+    clientSessionId: sessionType === "focus" ? sessionId : undefined,
     minutes: mins,
     type: sessionType,
     completedAt: new Date().toISOString(),
   };
   db.data.pomodoroSessions.push(session);
 
-  const state = getOrCreateUserState(db, req.userId);
   let leveledUp = false;
 
   if (sessionType === "focus") {

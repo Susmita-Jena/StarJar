@@ -81,8 +81,8 @@ const api = {
 
   getState: () => apiFetch("/state"),
   getAchievements: () => apiFetch("/achievements"),
-  completePomodoro: (minutes, type) =>
-    apiFetch("/pomodoro/complete", { method: "POST", body: JSON.stringify({ minutes, type }) }),
+  completePomodoro: (minutes, type, sessionId) =>
+    apiFetch("/pomodoro/complete", { method: "POST", body: JSON.stringify({ minutes, type, sessionId }) }),
   setWater: (count, date) => apiFetch("/water", { method: "POST", body: JSON.stringify({ count, date }) }),
 };
 

@@ -534,8 +534,8 @@ img, svg { display: block; max-width: 100%; }
 .pomo__stat { font-size: 0.82rem; color: var(--text-tertiary); }
 .pomo__stat strong { color: var(--text-primary); font-family: var(--font-mono); }
 
-
-   RECHARGE VIEW — mood, water, stretch, and the two games
+/* ============================================
+   RECHARGE VIEW — mood, water, stretch, and the games
    ============================================ */
 
 .recharge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
@@ -1229,6 +1229,43 @@ body[data-theme="storybook"] .task-item {
   background: rgba(255, 253, 248, .92);
   border-color: #E8D8CA;
   box-shadow: 0 7px 18px -16px rgba(91, 63, 51, .42);
+  border-radius: 18px;
+}
+body[data-theme="storybook"] .task-item__check {
+  border-radius: 50%;
+  border-color: #D9C5B7;
+}
+body[data-theme="storybook"] .task-item.is-done .task-item__check {
+  background: #87977B;
+  border-color: #87977B;
+}
+body[data-theme="storybook"] .xp-chip {
+  background: #FFF9E9;
+  border-color: #EAD9B8;
+  color: #9D7438;
+}
+body[data-theme="storybook"] .pomo__ring-progress {
+  filter: drop-shadow(0 0 8px rgba(135, 151, 123, .35));
+}
+body[data-theme="storybook"] .memory-card__back {
+  background: linear-gradient(145deg, #E7C8B5, #E6D3A7 55%, #B9C2A9);
+  border-color: #D8C3B3;
+}
+body[data-theme="storybook"] .badge.is-unlocked {
+  background: #FFFBF2;
+  border-color: #E5D4B3;
+}
+body[data-theme="storybook"] .badge.is-unlocked .badge__icon {
+  background: linear-gradient(135deg, #C87978, #D9A65B);
+}
+@media (min-width: 821px) {
+  body[data-theme="storybook"] .streak-summary::before {
+    content: "✦ your story is growing";
+    color: #A27B6D;
+    font-family: var(--font-display);
+    font-size: .85rem;
+    font-style: italic;
+  }
 }
 body[data-theme="storybook"] .task-add__input,
 body[data-theme="storybook"] .task-add__priority {
@@ -1271,6 +1308,20 @@ body[data-theme="storybook"] .theme-card {
   background: #FFFDF8 !important;
   border: 1px solid #E8D8CA;
   box-shadow: 0 10px 24px -18px rgba(91, 63, 51, .35);
+}
+body[data-theme="storybook"] .theme-card--storybook {
+  background-image: radial-gradient(ellipse at 88% 12%, rgba(217, 166, 91, .22), transparent 38%), linear-gradient(145deg, #FFFDF8, #F5E8DB) !important;
+  border-color: #D9BFAF;
+}
+body[data-theme="storybook"] .theme-card--storybook::before { background: transparent; }
+body[data-theme="storybook"] .theme-card--storybook::after {
+  content: "✦";
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  color: #C87978;
+  font-size: 1.8rem;
+  animation: sparkleTwinkle 3.2s ease-in-out infinite;
 }
 body[data-theme="storybook"] .theme-card__name { color: #59463F; }
 body[data-theme="storybook"] .theme-card__desc { color: #806D63; }

@@ -17,6 +17,7 @@
   }
 
   const todayKey = () => new Date().toISOString().slice(0, 10);
+  const localDateKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
   /* ============================================
      THEMES
@@ -84,10 +85,53 @@
     unlockedIds: new Set(),
     xp: 0, level: 1, xpIntoLevel: 0, xpForNextLevel: 150, streak: 0,
     waterToday: 0,
-    pomo: { mins: 25, secondsLeft: 25 * 60, running: false, sessionsToday: 0, intervalId: null },
+    pomo: { mins: 25, secondsLeft: 25 * 60, running: false, sessionsToday: 0, intervalId: null, sessionId: null, endAt: null, pendingCompletion: null },
     breathing: { running: false, phase: null, cycles: 0, timeoutId: null },
     memory: { cards: [], flipped: [], matched: new Set(), moves: 0, locked: false },
   };
+
+  function pomoStorageKey() {
+    const user = api.getCachedUser();
+    return `studysync_pomo_${user?.id || "guest"}`;
+  }
+
+  function savePomoSession() {
+    try {
+      localStorage.setItem(pomoStorageKey(), JSON.stringify({
+        mins: state.pomo.mins,
+        secondsLeft: state.pomo.secondsLeft,
+        running: state.pomo.running,
+        sessionId: state.pomo.sessionId,
+        endAt: state.pomo.endAt,
+        pendingCompletion: state.pomo.pendingCompletion,
+      }));
+    } catch { /* timer still works for this visit if storage is unavailable */ }
+  }
+
+  function restorePomoSession() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(pomoStorageKey()) || "null");
+      if (!saved || ![5, 15, 25, 50].includes(Number(saved.mins))) return;
+      state.pomo.mins = Number(saved.mins);
+      state.pomo.secondsLeft = Math.max(0, Number(saved.secondsLeft) || 0);
+      state.pomo.running = Boolean(saved.running);
+      state.pomo.sessionId = typeof saved.sessionId === "string" ? saved.sessionId : null;
+      state.pomo.endAt = Number.isFinite(saved.endAt) ? saved.endAt : null;
+      state.pomo.pendingCompletion = saved.pendingCompletion && typeof saved.pendingCompletion === "object"
+        ? saved.pendingCompletion : null;
+      if (state.pomo.running && state.pomo.endAt) {
+        state.pomo.secondsLeft = Math.max(0, Math.ceil((state.pomo.endAt - Date.now()) / 1000));
+      } else if (state.pomo.running) {
+        state.pomo.running = false;
+      }
+      if (!state.pomo.running && state.pomo.sessionId) el.pomoStart.textContent = "Resume";
+      $$(".pomo__mode").forEach((btn) => btn.classList.toggle("is-active", Number(btn.dataset.mins) === state.pomo.mins));
+    } catch { /* ignore stale or malformed local timer state */ }
+  }
+
+  function newPomoSessionId() {
+    return window.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  }
 
   const QUOTES = [
     "You don't need to feel ready. You need to open the file.",
@@ -188,6 +232,7 @@
       state.moods = moodsRes;
       state.achievements = achRes;
       state.unlockedIds = new Set(achRes.filter((a) => a.unlocked).map((a) => a.id));
+      restorePomoSession();
 
       el.loadingState.style.display = "none";
       el.appRoot.style.display = "grid";
@@ -195,6 +240,9 @@
       renderAll();
       initMemory();
       startBackgroundTimers();
+      if (state.pomo.pendingCompletion) syncPendingPomoCompletion();
+      else if (state.pomo.running && state.pomo.secondsLeft <= 0) finishPomoSession();
+      else if (state.pomo.running) startPomo();
     } catch (err) {
       el.loadingState.style.display = "none";
       if (err.isAuthError) {
@@ -240,7 +288,7 @@
 
   el.logoutBtn.addEventListener("click", () => {
     api.logout();
-    window.location.href = "/landing.html";
+    window.location.href = "/";
   });
 
   /* ============================================
@@ -272,12 +320,12 @@
     const now = new Date();
     el.dateToday.textContent = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
     const hour = now.getHours();
-    let greet = "Let's get something done";
-    if (hour < 5) greet = "Still up? Let's make it count";
-    else if (hour < 12) greet = "Morning — what's first today?";
-    else if (hour < 17) greet = "Midday check-in — what's next?";
-    else if (hour < 21) greet = "Evening push — pick one thing";
-    else greet = "Late one. One small task, then rest";
+    let greet = "Your next tiny quest is waiting";
+    if (hour < 5) greet = "A little late-night quest, then rest";
+    else if (hour < 12) greet = "A fresh page, a fresh start";
+    else if (hour < 17) greet = "Midday meadow check-in";
+    else if (hour < 21) greet = "Evening glow — choose one small thing";
+    else greet = "One gentle quest, then time to rest";
     el.greeting.textContent = greet;
     el.xpCount.textContent = state.xp;
   }
@@ -390,6 +438,7 @@
     el.taskList.innerHTML = "";
     const sorted = [...state.tasks].sort((a, b) => a.done - b.done);
     sorted.forEach((t) => {
+      const priorityLabel = { low: "Tiny", mid: "Steady", high: "Mighty" }[t.priority] || "Steady";
       const item = document.createElement("div");
       item.className = "task-item" + (t.done ? " is-done" : "");
       item.innerHTML = `
@@ -397,12 +446,14 @@
           <svg viewBox="0 0 14 14" fill="none"><path d="M2 7L5.5 10.5L12 3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div class="task-item__body"><p class="task-item__text"></p></div>
-        <span class="task-item__priority task-item__priority--${t.priority}">${t.priority}</span>
+        <span class="task-item__priority task-item__priority--${t.priority}">${priorityLabel}</span>
         <button class="task-item__del" aria-label="Delete task">
           <svg viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         </button>
       `;
       item.querySelector(".task-item__text").textContent = t.text;
+      item.querySelector(".task-item__check").setAttribute("aria-label", `${t.done ? "Reopen" : "Complete"} quest: ${t.text}`);
+      item.querySelector(".task-item__del").setAttribute("aria-label", `Delete quest: ${t.text}`);
       item.querySelector(".task-item__check").addEventListener("click", () => toggleTask(t));
       item.querySelector(".task-item__del").addEventListener("click", () => deleteTask(t.id));
       el.taskList.appendChild(item);
@@ -410,7 +461,8 @@
 
     el.emptyState.classList.toggle("is-visible", state.tasks.length === 0);
     el.taskNavCount.textContent = state.tasks.filter((t) => !t.done).length;
-    const doneCount = state.tasks.filter((t) => t.done).length;
+    const today = localDateKey(new Date());
+    const doneCount = state.tasks.filter((t) => t.done && t.completedAt && localDateKey(new Date(t.completedAt)) === today).length;
     el.doneToday.textContent = doneCount;
     if (el.doneTodayRecharge) el.doneTodayRecharge.textContent = doneCount;
   }
@@ -437,6 +489,7 @@
       const res = await withConnectivity(api.toggleTask(task.id, nextDone));
       task.done = res.task.done;
       task.completedAt = res.task.completedAt;
+      renderTasks();
       applyGamifyResult(res);
     } catch {
       task.done = !nextDone;
@@ -488,51 +541,88 @@
       btn.classList.add("is-active");
       state.pomo.mins = parseInt(btn.dataset.mins, 10);
       state.pomo.secondsLeft = state.pomo.mins * 60;
+      state.pomo.sessionId = null;
+      state.pomo.endAt = null;
+      savePomoSession();
       renderPomo();
     });
   });
 
   function startPomo() {
+    if (state.pomo.pendingCompletion) {
+      showToast("One finished focus quest is waiting to sync. Reconnect and it will catch up.");
+      return;
+    }
+    const isBreak = state.pomo.mins === 5 || state.pomo.mins === 15;
+    if (!isBreak && !state.pomo.sessionId) state.pomo.sessionId = newPomoSessionId();
     state.pomo.running = true;
+    state.pomo.endAt = Date.now() + state.pomo.secondsLeft * 1000;
+    savePomoSession();
     el.pomoStart.textContent = "Pause";
     el.pomoStart.classList.add("is-running");
-    state.pomo.intervalId = setInterval(async () => {
-      state.pomo.secondsLeft -= 1;
+    state.pomo.intervalId = setInterval(() => {
+      state.pomo.secondsLeft = Math.max(0, Math.ceil((state.pomo.endAt - Date.now()) / 1000));
       if (state.pomo.secondsLeft <= 0) {
         clearInterval(state.pomo.intervalId);
-        state.pomo.running = false;
-        el.pomoStart.textContent = "Start focus";
-        el.pomoStart.classList.remove("is-running");
-        const wasBreak = state.pomo.mins === 5 || state.pomo.mins === 15;
-        const completedMins = state.pomo.mins;
-
-        if (!wasBreak) {
-          try {
-            const res = await withConnectivity(api.completePomodoro(completedMins, "focus"));
-            state.pomo.sessionsToday = res.sessionsToday;
-            const xpGained = res.xp - state.xp;
-            applyGamifyResult(res);
-            showToast(`⏱️ Session complete — +${xpGained} XP. Stand up for a second before the next one.`);
-          } catch {
-            showToast("⏱️ Session complete, but it couldn't be saved — check your connection.");
-          }
-        } else {
-          try { await withConnectivity(api.completePomodoro(completedMins, "break")); } catch { /* breaks are low-stakes to lose */ }
-          showToast("Break's over. Ready when you are.");
-        }
-        state.pomo.secondsLeft = state.pomo.mins * 60;
-        renderPomo();
+        finishPomoSession();
       } else {
         renderPomo();
       }
     }, 1000);
   }
 
-  function pausePomo() {
+  function finishPomoSession() {
+    clearInterval(state.pomo.intervalId);
     state.pomo.running = false;
+    state.pomo.endAt = null;
+    el.pomoStart.textContent = "Start focus";
+    el.pomoStart.classList.remove("is-running");
+    const isBreak = state.pomo.mins === 5 || state.pomo.mins === 15;
+    state.pomo.pendingCompletion = {
+      minutes: state.pomo.mins,
+      type: isBreak ? "break" : "focus",
+      sessionId: state.pomo.sessionId,
+    };
+    state.pomo.sessionId = null;
+    state.pomo.secondsLeft = state.pomo.mins * 60;
+    savePomoSession();
+    renderPomo();
+    syncPendingPomoCompletion();
+  }
+
+  async function syncPendingPomoCompletion() {
+    const completion = state.pomo.pendingCompletion;
+    if (!completion) return;
+    try {
+      const previousXp = state.xp;
+      const res = await withConnectivity(api.completePomodoro(completion.minutes, completion.type, completion.sessionId));
+      if (completion.type === "focus") {
+        state.pomo.sessionsToday = res.sessionsToday;
+        applyGamifyResult(res);
+        const xpGained = Math.max(0, res.xp - previousXp);
+        showToast(res.duplicate
+          ? "Your completed focus quest is safely synced — no double XP."
+          : `Focus quest complete — +${xpGained} XP. Take a tiny stretch, too.`);
+      } else {
+        showToast("Break quest complete. Ready when you are.");
+      }
+      state.pomo.pendingCompletion = null;
+      savePomoSession();
+    } catch {
+      showToast("Your finished quest is saved here and will sync when the connection returns.");
+    }
+  }
+  window.addEventListener("online", syncPendingPomoCompletion);
+
+  function pausePomo() {
+    if (state.pomo.endAt) state.pomo.secondsLeft = Math.max(0, Math.ceil((state.pomo.endAt - Date.now()) / 1000));
+    state.pomo.running = false;
+    state.pomo.endAt = null;
     clearInterval(state.pomo.intervalId);
     el.pomoStart.textContent = "Resume";
     el.pomoStart.classList.remove("is-running");
+    savePomoSession();
+    renderPomo();
   }
 
   el.pomoStart.addEventListener("click", () => {
@@ -544,6 +634,8 @@
     pausePomo();
     el.pomoStart.textContent = "Start focus";
     state.pomo.secondsLeft = state.pomo.mins * 60;
+    state.pomo.sessionId = null;
+    savePomoSession();
     renderPomo();
   });
 
@@ -563,14 +655,14 @@
   });
 
   el.moodSave.addEventListener("click", async () => {
-    if (!selectedMood) { showToast("Pick a mood first — even a rough guess is useful data."); return; }
+    if (!selectedMood) { showToast("Choose a mood if you feel like it — skipping is perfectly fine, too."); return; }
     try {
       const entry = await withConnectivity(api.logMood(selectedMood, selectedColor, el.moodNote.value.trim()));
       const existingIdx = state.moods.findIndex((m) => m.date === entry.date);
       if (existingIdx >= 0) state.moods[existingIdx] = entry; else state.moods.unshift(entry);
       renderMoodStrip();
       refreshAchievements();
-      showToast("Logged today's mood. That's one more data point for a pattern you'll actually see.");
+      showToast("Mood page tucked into your journal. Thanks for checking in with yourself.");
     } catch { /* connectivity banner already shown */ }
   });
 
