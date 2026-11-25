@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import vm from "node:vm";
 
 const testDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "starjar-api-test-"));
 process.env.NODE_ENV = "test";
@@ -158,4 +159,37 @@ test("StarJar API persists account flows and isolates each user's study records"
   assert.equal(secondMoods.data.length, 0);
   assert.equal(secondState.data.xp, 0);
   assert.equal(secondState.data.waterToday, 0);
+});
+
+test("frontend shows auth endpoint errors and still clears expired protected sessions", async () => {
+  const values = new Map();
+  let nextResponse = {
+    status: 401,
+    ok: false,
+    json: async () => ({ error: "No account found with that email." }),
+  };
+  const context = {
+    localStorage: {
+      getItem: (key) => values.get(key) ?? null,
+      setItem: (key, value) => values.set(key, value),
+      removeItem: (key) => values.delete(key),
+    },
+    window: {},
+    fetch: async () => nextResponse,
+  };
+  const source = fs.readFileSync(new URL("../public/api.js", import.meta.url), "utf8");
+  vm.runInNewContext(source, context);
+
+  await assert.rejects(
+    context.window.studySyncApi.login("missing@example.invalid", "test-password"),
+    (error) => error.message === "No account found with that email."
+  );
+
+  values.set("studysync_token", "expired-token");
+  nextResponse = { status: 401, ok: false, json: async () => ({ error: "Unauthorized." }) };
+  await assert.rejects(
+    context.window.studySyncApi.me(),
+    (error) => error.message === "Session expired" && error.isAuthError === true
+  );
+  assert.equal(values.has("studysync_token"), false);
 });

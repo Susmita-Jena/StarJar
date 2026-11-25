@@ -39,7 +39,7 @@ async function apiFetch(path, options = {}) {
     throw err;
   }
 
-  if (res.status === 401) {
+  if (res.status === 401 && !path.startsWith("/auth/")) {
     clearSession();
     const err = new Error("Session expired");
     err.isAuthError = true;
