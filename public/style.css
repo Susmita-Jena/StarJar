@@ -1496,3 +1496,249 @@ body[data-theme="storybook"] .nav__item.is-active {
   body[data-theme="storybook"] .hero__visual-card::after,
   body[data-theme="storybook"] .sparkle { animation: none; }
 }
+
+
+/* ============================================
+   STARJAR DASHBOARD — THE LITTLE QUESTBOOK
+   ============================================ */
+body[data-theme="storybook"] {
+  --font-body: 'DM Sans', sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+  --bg: #F8F2E8;
+  --surface: #FFFDF8;
+  --surface-hover: #F8EEE7;
+  --surface-raised: #FFFFFF;
+  --border: #E8D8CA;
+  --border-soft: #F0E5DA;
+  --text-primary: #493B36;
+  --text-secondary: #806D63;
+  --text-tertiary: #A89488;
+  --primary: #C87978;
+  --primary-strong: #AE6265;
+  --accent-info: #D9A65B;
+  --accent-ok: #87977B;
+  --accent-ok-dim: #6F8065;
+  --accent-warn: #B96F66;
+  --on-accent: #FFFCF7;
+  --shadow-card: 0 14px 34px -20px rgba(101,69,55,.28);
+  --glow-primary: 0 8px 22px rgba(200,121,120,.18);
+}
+body[data-theme="storybook"] {
+  background-image:
+    radial-gradient(circle at 8% 12%, rgba(200,121,120,.10) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 88% 28%, rgba(217,166,91,.12) 0 1px, transparent 1.7px),
+    linear-gradient(135deg,#FBF7EF,#F6EEE4);
+  background-size: 27px 27px, 33px 33px, auto;
+}
+body[data-theme="storybook"]::before {
+  background-image:
+    radial-gradient(ellipse 600px 460px at 0% 0%,rgba(224,184,165,.22),transparent 70%),
+    radial-gradient(ellipse 560px 480px at 100% 18%,rgba(218,196,151,.20),transparent 72%),
+    radial-gradient(ellipse 620px 420px at 55% 100%,rgba(171,187,158,.12),transparent 70%);
+  background-color: transparent;
+}
+body[data-theme="storybook"] .app { gap: 22px; }
+body[data-theme="storybook"] .rail {
+  border: 1px solid rgba(232,216,202,.9);
+  border-radius: 26px;
+  margin: 16px 0 16px 16px;
+  height: calc(100vh - 32px);
+  top: 16px;
+  box-shadow: 0 18px 45px -32px rgba(91,63,51,.36);
+}
+body[data-theme="storybook"] .rail--right { margin: 16px 16px 16px 0; }
+body[data-theme="storybook"] .canvas {
+  padding-top: 48px;
+}
+body[data-theme="storybook"] .brand__name {
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  letter-spacing: -.045em;
+}
+body[data-theme="storybook"] .brand__name::before {
+  content: "✷";
+  color: #C87978;
+  font-family: 'DM Sans',sans-serif;
+  font-size: .78em;
+  margin-right: 8px;
+  vertical-align: .08em;
+}
+body[data-theme="storybook"] .streak-summary {
+  background: linear-gradient(145deg,#FFF9EF,#F5E7DC);
+  border: 1px solid #EAD9C9;
+  border-radius: 20px;
+}
+body[data-theme="storybook"] .view-head { margin-bottom: 26px; }
+body[data-theme="storybook"] .view-head__eyebrow {
+  color: #A66C62;
+  letter-spacing: .13em;
+  font-weight: 700;
+}
+body[data-theme="storybook"] .view-head__title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem,3vw,2.65rem);
+  line-height: 1.12;
+  font-weight: 400;
+  letter-spacing: -.045em;
+  color: #493B36;
+}
+body[data-theme="storybook"] .xp-chip {
+  border-radius: 999px;
+  background: #FFF8E9;
+  border: 1px solid #EAD9B8;
+  color: #98713B;
+  padding: 10px 15px;
+}
+body[data-theme="storybook"] .task-add {
+  padding: 9px;
+  border: 1px solid #E8D8CA;
+  border-radius: 20px;
+  background: rgba(255,253,248,.88);
+  box-shadow: 0 10px 28px -24px rgba(91,63,51,.45);
+}
+body[data-theme="storybook"] .task-add__input,
+body[data-theme="storybook"] .task-add__priority {
+  background: transparent;
+  border-color: transparent;
+  color: #59463F;
+}
+body[data-theme="storybook"] .task-add__input::placeholder { color: #B09B8D; }
+body[data-theme="storybook"] .task-add__btn {
+  border-radius: 14px;
+  background: #C87978;
+  box-shadow: 0 6px 14px rgba(200,121,120,.2);
+}
+body[data-theme="storybook"] .task-list { gap: 11px; }
+body[data-theme="storybook"] .task-item {
+  min-height: 68px;
+  padding: 15px 17px;
+  border: 1px solid #EADFD3;
+  border-radius: 18px 18px 18px 8px;
+  background: rgba(255,253,248,.92);
+  box-shadow: 0 8px 22px -20px rgba(91,63,51,.42);
+}
+body[data-theme="storybook"] .task-item:hover {
+  border-color: #D9B9A9;
+  transform: translateY(-2px);
+}
+body[data-theme="storybook"] .task-item__check {
+  border: 1.5px solid #D8BFAF;
+  background: #FFFCF7;
+}
+body[data-theme="storybook"] .task-item.is-done {
+  background: rgba(241,239,226,.78);
+}
+body[data-theme="storybook"] .task-item__priority {
+  border-radius: 999px;
+  padding: 5px 10px;
+  background: #F7EDE3;
+  color: #987567;
+}
+body[data-theme="storybook"] .task-item__priority--high {
+  background: #F7E5E1;
+  color: #A85F61;
+}
+body[data-theme="storybook"] .task-item__priority--low {
+  background: #EAF0E5;
+  color: #718365;
+}
+body[data-theme="storybook"] .empty-state {
+  border: 1px dashed #DCC8B8;
+  border-radius: 26px;
+  background: rgba(255,253,248,.58);
+  padding: 48px 24px;
+}
+body[data-theme="storybook"] .panel,
+body[data-theme="storybook"] .progress-card,
+body[data-theme="storybook"] .recharge-card,
+body[data-theme="storybook"] .quote-card,
+body[data-theme="storybook"] .wellness-card {
+  border: 1px solid #E8D8CA;
+  border-radius: 24px;
+  background: rgba(255,253,248,.9);
+  box-shadow: 0 14px 34px -25px rgba(91,63,51,.34);
+  backdrop-filter: blur(14px);
+}
+body[data-theme="storybook"] .nav__item {
+  border-radius: 14px;
+  min-height: 44px;
+}
+body[data-theme="storybook"] .nav__item.is-active {
+  background: #F3E3D8;
+  color: #A85F61;
+}
+body[data-theme="storybook"] .bottom-nav {
+  background: rgba(255,253,248,.94);
+  border-top: 1px solid #E8D8CA;
+  backdrop-filter: blur(18px);
+}
+body[data-theme="storybook"] .pomo__ring-progress {
+  filter: drop-shadow(0 0 8px rgba(200,121,120,.3));
+}
+body[data-theme="storybook"] .pomo__ring-track { stroke: #EDE1D6; }
+body[data-theme="storybook"] .recharge-card__title,
+body[data-theme="storybook"] .wellness-card__title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 400;
+}
+body[data-theme="storybook"] .mood-opt,
+body[data-theme="storybook"] .water-drop,
+body[data-theme="storybook"] .memory-card {
+  border-radius: 16px;
+}
+body[data-theme="storybook"] .theme-hero {
+  border: 1px solid #E8D8CA;
+  border-radius: 28px;
+  box-shadow: 0 16px 36px -24px rgba(91,63,51,.34);
+}
+body[data-theme="storybook"] .theme-card {
+  border-radius: 22px;
+  min-height: 205px;
+}
+body[data-theme="storybook"] .theme-card--storybook {
+  background-image: radial-gradient(circle at 85% 16%,rgba(217,166,91,.28),transparent 32%),linear-gradient(145deg,#FFFDF8,#F1DFD2);
+}
+body[data-theme="storybook"] .theme-card--storybook .theme-card__name,
+body[data-theme="storybook"] .theme-card--storybook .theme-card__desc {
+  color: #59463F;
+  text-shadow: none;
+}
+body[data-theme="storybook"] .auth-card {
+  max-width: 440px;
+  padding: 18px;
+  border-radius: 32px;
+}
+body[data-theme="storybook"] .auth-panel {
+  border-radius: 26px;
+  padding: 36px;
+}
+body[data-theme="storybook"] .auth-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -.035em;
+}
+body[data-theme="storybook"] input,
+body[data-theme="storybook"] textarea,
+body[data-theme="storybook"] select { border-radius: 14px; }
+body[data-theme="storybook"] :focus-visible {
+  outline: 2px solid #C87978;
+  outline-offset: 3px;
+}
+@media (max-width: 1180px) {
+  body[data-theme="storybook"] .rail { margin: 12px 0 12px 12px; height: calc(100vh - 24px); top: 12px; }
+  body[data-theme="storybook"] .canvas { padding-top: 32px; }
+}
+@media (max-width: 820px) {
+  body[data-theme="storybook"] .app { gap: 0; }
+  body[data-theme="storybook"] .rail--left {
+    margin: 0;
+    height: auto;
+    border-radius: 0 0 20px 20px;
+    border: 0;
+    border-bottom: 1px solid #E8D8CA;
+  }
+  body[data-theme="storybook"] .canvas { padding: 26px 16px 96px; }
+  body[data-theme="storybook"] .view-head__title { font-size: 1.95rem; }
+  body[data-theme="storybook"] .auth-panel { padding: 28px 22px; }
+}
